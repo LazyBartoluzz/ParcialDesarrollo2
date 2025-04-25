@@ -261,9 +261,7 @@ fun DetailScreen(navController : NavController, listadoDatos: mutableListOf<Dato
 				onClick = {
 					
 						showDialog = true		
-
-					}
-						
+	
 				}
 						
 			) {
