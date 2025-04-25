@@ -1,0 +1,512 @@
+//Archivo -> MainActivity
+
+//implementation("io.coil-kt.coil3:coil-compose:3.1.0")
+
+package com.example.menudesplegable
+
+
+import android.os.Bundle
+import androidx.activity.compose.setContent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.menudesplegable.Screens.Datos
+import com.example.menudesplegable.Screens.DetailScreen
+import com.example.menudesplegable.Screens.HomeScreen
+
+class MainActivity : androidx.activity.ComponentActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?){
+
+        super.onCreate(savedInstanceState)
+
+        setContent{
+				
+            	var listadoDatos by remember { mutableStateOf ( mutableListOf<Datos>() ) }
+            	
+            	var tarjetaDeMascotaSeleccionada by remember { mutableStateOf ( Datos() ) }
+            	
+            	
+            	val navController = rememberNavController()
+
+            	NavHost(navController = navController, startDestination = "ScreenA"){
+	
+                	composable(route = "ScreenA"){
+	
+                    	HomeScreen(navController,listadoDatos) 
+                	}
+	
+                	composable(route = "ScreenB"){ 
+	
+                    	DetailScreen(navController,listadoDatos,tarjetaDeMascotaSeleccionada)
+                	}
+                	
+                	composable(route = "ScreenC"){ 
+	
+                    	EditScreen(navController,tarjetaDeMascotaSeleccionada)
+                	}
+				}
+            }
+
+        }
+    }
+
+//-------------------------------------------------------------------------------------------------------------
+
+//Archivo --> ScreenA
+
+package com.example.menudesplegable.Screens
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation.NavController
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+
+
+@Composable
+fun HomeScreen(navController : NavController, listadoDatos: mutableListOf<Datos>) {
+
+    var fieldNombre by remember { mutableStateOf("") }
+    var fieldRaza by remember { mutableStateOf("") }
+    var fieldSize by remember { mutableStateOf("") }
+	var fieldEdad by remember { mutableStateOf( "" ) }
+	var fieldUrlImagen by remember { mutableStateOf("") }
+
+    Column(){
+
+		Text("Datos de La tarjeta")
+
+        Row {
+
+            Text("Nombre: ")
+
+            TextField(
+                value = fieldNombre,
+                onValueChange = { fieldNombre = it },
+                label = { Text( text = "nombre" ) }
+            )
+        }
+
+        Row {
+
+            Text("Raza: ")
+
+            TextField(
+                value = fieldRaza
+                onValueChange = { fieldRaza = it },
+                label = { Text( text = "raza" ) }
+            )
+        }
+
+        Row {
+
+            Text("Tamaño: ")
+
+            TextField(
+                value = fieldSize,
+                onValueChange = { fieldSize = it },
+                label = { Text( text = "tamaño" ) }
+            )
+        }
+        
+        
+        Row {
+
+            Text("Edad: ")
+
+            TextField(
+                value = fieldEdad,
+                onValueChange = { fieldEdad = it },
+                label = { Text( text = "edad" ) }
+            )
+        }
+        
+        Row {
+
+            Text("Url Imágen: ")
+
+            TextField(
+                value = fieldUrlImagen
+                onValueChange = { fieldUrlImagen = it },
+                label = { Text( text = "url" ) }
+            )
+        }
+	
+		val contextoParaToast = LocalContext.current.applicationContext
+        Button(
+
+            onClick = {
+		
+				var objDatos = Datos();
+		
+				objDatos.nombre = fieldNombre
+				
+				objDatos.raza = fieldRaza
+				
+				objDatos.size = fieldSize
+				
+				objDatos.edad = fieldEdad.toInt()
+				
+				objDatos.urlImagen = fieldUrlImagen						
+                
+                listadoDatos.add( objDatos )
+                
+                Toast.makeText( contextoParaToast, "Se ha agregado...", Toast.LENGTH_SHORT ).show()
+                
+                navController.navigate("ScreenB")
+            }
+        ){
+            Text(text = "Mostrar Carnet")
+        }
+
+		Spacer(modifier = Modifier.height( 20.dp ))		
+    }
+}
+
+//---------------------------------------------------------------------------------------------------
+//Archivo --> ScreenB
+
+package com.example.menudesplegable.Screens
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
+import java.lang.reflect.Modifier
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+
+@Composable
+fun DetailScreen(navController : NavController, listadoDatos: mutableListOf<Datos>, tarjeta : Datos){
+
+	//cuadro de dialogo
+	var showDialog by remember { mutableStateOf( false ) }		
+						
+	if( showDialog ){
+	
+		AlertDialog(
+			
+			onDismissRequest = {},
+			confirmButton = {
+				
+				TextButton(
+					onClic = {
+						
+						//
+						listadoDatos.remove(tarjeta)
+						
+						Toast.makeText( contextoParaToast, "Se ha borrado a ${tarjeta.nombre}...", Toast.LENGTH_SHORT ).show()
+						tarjeta = Datos()
+						//
+						showDialog = false
+					}
+				){
+					Text("Borrar")
+				}
+				
+			},
+			dismissButton = {
+				TextButton(
+					onClic = {}
+				){
+					Text("Cancelar")
+				}
+			},
+			title = { Text("Esta seguro de que desea borrar esa tarjeta") }
+		)
+	
+	}
+	
+
+	Column(){
+	
+			
+			Button(
+				
+				onClick = {
+								
+					
+					navController.popBackStack()
+				}
+						
+			) {
+					
+				Text(text = "<--")
+			}
+			
+			val contextoParaToast = LocalContext.current.applicationContext
+			
+			Button(
+				
+				onClick = {
+					
+						showDialog = true		
+
+					}
+						
+				}
+						
+			) {
+					
+				Text(text = "eliminar")
+			}
+			
+			Button(
+				
+				onClick = {
+					
+					if(tarjeta.nombre != "-")
+					{
+						navController.navigate("ScreenC")
+					}else{
+						Toast.makeText( contextoParaToast, "Esa mascota no esta en la lista...", Toast.LENGTH_LONG ).show()
+					}
+								
+				}
+						
+			) {
+					
+				Text(text = "modificar")
+			}		
+	
+	}
+	
+
+
+	Spacer(modifier = Modifier.height( 10.dp ))
+	
+	//---
+	
+	
+ 	LazyColumn(
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        items(listadoDatos) { item ->
+            Row {
+                         
+                Column(
+                	
+                	modifier = Modifier.padding(all = 7.dp)
+                	
+                ){
+				
+					Spacer(modifier = Modifier.height( 50.dp ))
+					
+					Text(text = "Carnet de ${ item.nombre }")
+					Spacer(modifier = Modifier.height( 30.dp ))
+					
+					AsyncImage(model = item.urlImagen,
+    				contentDescription = "esta es una mascota",
+					)	
+					
+					Spacer(modifier = Modifier.height( 5.dp ))
+					Text(text = item.raza)
+					
+					Spacer(modifier = Modifier.height( 5.dp ))
+					Text(text = item.size)
+					
+					
+					Spacer(modifier = Modifier.height( 5.dp ))
+					Text(text = item.edad.toString())
+					
+					//--
+					
+					
+					Button(
+								
+						onClick = {
+										
+							tarjeta = item	
+						}
+								
+					) {
+							
+						Text(text = " ")
+					}
+					
+					//--
+				}
+                
+            }
+            Divider(color = Color.Black)
+        }
+    }
+	
+	//----
+
+}
+
+//-------------------------------------------------------------------------------------------------
+
+//Archivo --> ScreenC
+
+package com.example.menudesplegable.Screens
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation.NavController
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+
+
+@Composable
+fun EditScreen(navController : NavController, tarjetaMascota : Datos) {
+
+    var fieldNombre by remember { mutableStateOf( tarjetaMascota.nombre ) }
+    var fieldRaza by remember { mutableStateOf(tarjetaMascota.raza ) }
+    var fieldSize by remember { mutableStateOf( tarjetaMascota.size ) }
+	var fieldEdad by remember { mutableStateOf( tarjetaMascota.edad.toString() ) }
+	var fieldUrlImagen by remember { mutableStateOf(tarjetaMascota.urlImagen) }
+
+    Column(){
+
+		Button(
+				
+			onClick = {
+									
+					
+				navController.popBackStack()
+			}
+						
+		) {
+					
+			Text(text = "<--")
+		}
+
+		Text("Haz los cambios")
+
+        Row {
+
+            Text("Nombre: ")
+
+            TextField(
+                value = fieldNombre,
+                onValueChange = { fieldNombre = it },
+                label = { Text( text = "nombre" ) }
+            )
+        }
+
+        Row {
+
+            Text("Raza: ")
+
+            TextField(
+                value = fieldRaza
+                onValueChange = { fieldRaza = it },
+                label = { Text( text = "raza" ) }
+            )
+        }
+
+        Row {
+
+            Text("Tamaño: ")
+
+            TextField(
+                value = fieldSize,
+                onValueChange = { fieldSize = it },
+                label = { Text( text = "tamaño" ) }
+            )
+        }
+        
+        
+        Row {
+
+            Text("Edad: ")
+
+            TextField(
+                value = fieldEdad,
+                onValueChange = { fieldEdad = it },
+                label = { Text( text = "edad" ) }
+            )
+        }
+        
+        Row {
+
+            Text("Url Imágen: ")
+
+            TextField(
+                value = fieldUrlImagen
+                onValueChange = { fieldUrlImagen = it },
+                label = { Text( text = "url" ) }
+            )
+        }
+	
+		val contextoParaToast = LocalContext.current.applicationContext
+        Button(
+
+            onClick = {
+		
+				tarjetaMascota.nombre = fieldNombre
+				
+				tarjetaMascota.raza = fieldRaza
+				
+				tarjetaMascota.size = fieldSize
+				
+				tarjetaMascota.edad = fieldEdad.toInt()
+				
+				tarjetaMascota.urlImagen = fieldUrlImagen						
+                
+                Toast.makeText( contextoParaToast, "Se ha modificado...", Toast.LENGTH_SHORT ).show()
+                
+                navController.popBackStack()
+            }
+        ){
+            Text(text = "Guardar cambios")
+        }
+
+		Spacer(modifier = Modifier.height( 20.dp ))		
+    }
+}
+
+//---------------------------------------------------------------------------------------------------
+
+package com.example.menudesplegable.Screens
+
+//mi clase
+
+class Datos {
+
+    var nombre = "-"
+    var raza = ""
+    var size = ""
+    var edad = 0
+    var urlImagen = ""
+}
+
+
+
+
+
+
